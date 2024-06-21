@@ -6,13 +6,10 @@
     tools:context=".ChatFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="wrap_content"
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Chat screen"
-        android:layout_centerInParent="true"
-        android:textSize="22sp"
-
+        android:id="@+id/recycler_view"
         />
 
 </RelativeLayout>
