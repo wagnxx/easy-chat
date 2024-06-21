@@ -5,14 +5,14 @@ import com.google.firebase.Timestamp;
 public class UserModel {
     private String phone;
     private String username;
-    private String uesrId;
+    private String userId;
 
     public String getUesrId() {
-        return uesrId;
+        return userId;
     }
 
     public void setUesrId(String uesrId) {
-        this.uesrId = uesrId;
+        this.userId = uesrId;
     }
 
     private Timestamp createdTimestamp;
@@ -23,7 +23,7 @@ public class UserModel {
     public UserModel(String phone, String username, String uesrId, Timestamp createdTimestamp) {
         this.phone = phone;
         this.username = username;
-        this.uesrId = uesrId;
+        this.userId = uesrId;
         this.createdTimestamp = createdTimestamp;
     }
 

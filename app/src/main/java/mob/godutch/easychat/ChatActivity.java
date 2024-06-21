@@ -12,16 +12,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
 
 import java.util.Arrays;
 
+import mob.godutch.easychat.adpter.ChatRecyclerAdapter;
+import mob.godutch.easychat.adpter.SearchUserRecyclerAdapter;
 import mob.godutch.easychat.model.ChatMessageModel;
 import mob.godutch.easychat.model.ChatRoomModel;
 import mob.godutch.easychat.model.UserModel;
@@ -39,6 +44,7 @@ public class ChatActivity extends AppCompatActivity {
 
     String chatRoomId;
     ChatRoomModel chatRoomModel;
+    ChatRecyclerAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +76,31 @@ public class ChatActivity extends AppCompatActivity {
 
         });
         getOrCreateChatRoomModel();
+        setupRecylerView();
 
+    }
+    void setupRecylerView() {
+        Query query = FirebaseUtil.getChatRoomMessageRefrence(chatRoomId)
+                .orderBy("timestamp", Query.Direction.DESCENDING);
+        FirestoreRecyclerOptions<ChatMessageModel>  options = new FirestoreRecyclerOptions.Builder<ChatMessageModel>()
+                .setQuery(query,ChatMessageModel.class).build();
+
+        adapter = new ChatRecyclerAdapter(options,this);
+
+        // 设置 RecyclerView 的布局管理器
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        manager.setReverseLayout(true);
+        recyclerView.setLayoutManager(manager);
+        recyclerView.setAdapter(adapter);
+        adapter.startListening();
+
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                recyclerView.smoothScrollToPosition(0);
+            }
+        });
     }
     void  sendMessageToUser(String message){
         chatRoomModel.setLastMessageTimestamp(Timestamp.now());
@@ -89,16 +119,22 @@ public class ChatActivity extends AppCompatActivity {
                 });
 
     }
-    void getOrCreateChatRoomModel(){
+    void getOrCreateChatRoomModel() {
         FirebaseUtil.getChatRoomRefrence(chatRoomId).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
+            if(task.isSuccessful()){
                 chatRoomModel = task.getResult().toObject(ChatRoomModel.class);
-                if (chatRoomModel == null) {
-                    chatRoomModel = new ChatRoomModel(chatRoomId,
-                            Arrays.asList(FirebaseUtil.currentUserId(), otherUser.getUesrId()), Timestamp.now(),"");
+                if(chatRoomModel==null){
+                    //first time chat
+                    chatRoomModel = new ChatRoomModel(
+                            chatRoomId,
+                            Arrays.asList(FirebaseUtil.currentUserId(),otherUser.getUesrId()),
+                            Timestamp.now(),
+                            ""
+                    );
                     FirebaseUtil.getChatRoomRefrence(chatRoomId).set(chatRoomModel);
                 }
             }
         });
     }
+
 }

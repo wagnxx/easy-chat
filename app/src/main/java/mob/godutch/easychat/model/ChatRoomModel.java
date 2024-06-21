@@ -10,6 +10,9 @@ public class ChatRoomModel {
     Timestamp lastMessageTimestamp;
     String lastMessageSenderId;
 
+    public ChatRoomModel() {
+    }
+
     public ChatRoomModel(String chatRoomId, List<String> userIds, Timestamp lastMessageTimestamp, String lastMessageSenderId) {
         this.chatRoomId = chatRoomId;
         this.userIds = userIds;

@@ -4,24 +4,15 @@ import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import mob.godutch.easychat.adpter.SearchUserRecyclerAdapter;
 import mob.godutch.easychat.model.UserModel;
-import mob.godutch.easychat.utils.AndroidUtil;
 import mob.godutch.easychat.utils.FirebaseUtil;
 
 public class SearchUserActivity extends AppCompatActivity {
@@ -61,7 +52,7 @@ public class SearchUserActivity extends AppCompatActivity {
     void  setupSearchRecyclerView(String searchTerm) {
         Query query = FirebaseUtil.allUserCollectionReference()
                 .whereGreaterThanOrEqualTo("username", searchTerm);
-        FirestoreRecyclerOptions options = new FirestoreRecyclerOptions.Builder<UserModel>()
+        FirestoreRecyclerOptions<UserModel> options = new FirestoreRecyclerOptions.Builder<UserModel>()
                 .setQuery(query,UserModel.class).build();
 
         adapter = new SearchUserRecyclerAdapter(options,this);
