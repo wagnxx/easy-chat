@@ -19,5 +19,17 @@ public class FirebaseUtil {
     public static CollectionReference allUserCollectionReference() {
         return FirebaseFirestore.getInstance().collection("users");
     }
-
+    public static DocumentReference getChatRoomRefrence(String chatRoomId) {
+        return FirebaseFirestore.getInstance().collection("chatRooms").document(chatRoomId);
+    }
+    public static CollectionReference getChatRoomMessageRefrence(String chatRoomId) {
+        return getChatRoomRefrence(chatRoomId).collection("chats");
+    }
+    public static String getChatRoomId(String userId1, String userid2) {
+        if (userId1.hashCode() < userid2.hashCode()) {
+            return userId1 + "_" + userid2;
+        } else {
+            return userid2 + "_" + userId1;
+        }
+    }
 }
