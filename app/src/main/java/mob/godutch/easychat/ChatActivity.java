@@ -1,11 +1,13 @@
 package mob.godutch.easychat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,6 +49,24 @@ public class ChatActivity extends AppCompatActivity {
     ChatRecyclerAdapter adapter;
 
     @Override
+    public void onBackPressed() {
+        if (shouldReturnToMainActivity()) {
+            Intent intent = new Intent(ChatActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 清除上面的Activity，确保返回到MainActivity
+            startActivity(intent);
+            finish(); // 结束当前Activity
+        } else {
+            super.onBackPressed(); // 调用默认的返回操作，返回上一个Activity
+        }
+    }
+
+    private boolean shouldReturnToMainActivity() {
+        // 根据你的业务逻辑判断是否返回MainActivity
+        return true; // 示例中总是返回MainActivity，你可以根据实际需求修改条件
+    }
+
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
@@ -57,14 +77,16 @@ public class ChatActivity extends AppCompatActivity {
 
         messageInput = findViewById(R.id.chat_message_input);
         sendMessageBtn = findViewById(R.id.message_send_btn);
-        backBtn = findViewById(R.id.back_btn);
+        backBtn = findViewById(R.id.chat_back_btn);
         otherUsername = findViewById(R.id.other_username);
         recyclerView = findViewById(R.id.chat_recycler_view);
 
+
         backBtn.setOnClickListener((v) -> {
-          OnBackPressedDispatcher dispatcher= getOnBackPressedDispatcher();
-          dispatcher.onBackPressed();
+            onBackPressed();
         });
+
+
 
         otherUsername.setText(otherUser.getUsername());
 
@@ -79,6 +101,9 @@ public class ChatActivity extends AppCompatActivity {
         setupRecylerView();
 
     }
+
+
+
     void setupRecylerView() {
         Query query = FirebaseUtil.getChatRoomMessageRefrence(chatRoomId)
                 .orderBy("timestamp", Query.Direction.DESCENDING);
