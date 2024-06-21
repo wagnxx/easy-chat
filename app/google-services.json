@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "787796736883",
+    "project_id": "fb-dev-fde3a",
+    "storage_bucket": "fb-dev-fde3a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:787796736883:android:824e4ab517d9fefe0da306",
+        "android_client_info": {
+          "package_name": "mob.godutch.easychat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "787796736883-ckua0kueoqi65170hoc88ausv0jq2crt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBILdedntrQYEw9c2TbFesxY6khseLyqe8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "787796736883-ckua0kueoqi65170hoc88ausv0jq2crt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
