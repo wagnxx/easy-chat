@@ -6,6 +6,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -38,7 +39,8 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.chat_recycler_view);
 
         backBtn.setOnClickListener((v) -> {
-            getOnBackPressedDispatcher();
+          OnBackPressedDispatcher dispatcher= getOnBackPressedDispatcher();
+          dispatcher.onBackPressed();
         });
 
         otherUsername.setText(otherUser.getUsername());
