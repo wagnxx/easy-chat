@@ -2,6 +2,7 @@ package mob.godutch.easychat.adpter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +38,15 @@ public class SearchUserRecyclerAdapter extends FirestoreRecyclerAdapter<UserMode
         if (userModel.getUesrId().equals(FirebaseUtil.currentUserId())) {
             holder.usernmaeText.setText(userModel.getUsername() + " (Me)");
         }
+
+        FirebaseUtil.getOtherProfilePicStorageRef(userModel.getUesrId())
+                .getDownloadUrl()
+                .addOnCompleteListener(t -> {
+                    if (t.isSuccessful()) {
+                        Uri uri = t.getResult();
+                        AndroidUtil.setProfilePic(context,uri, holder.profilePic);
+                    }
+                });
 
         holder.itemView.setOnClickListener(v -> {
             // navigation to chat activity

@@ -2,6 +2,7 @@ package mob.godutch.easychat.adpter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +42,16 @@ public class RecentChatRecyclerAdapter extends FirestoreRecyclerAdapter<ChatRoom
                         boolean lastMessageSendByMe = model.getLastMessageSenderId().equals(FirebaseUtil.currentUserId());
 
                         UserModel otherUserModel = task.getResult().toObject(UserModel.class);
+
+                        FirebaseUtil.getOtherProfilePicStorageRef(otherUserModel.getUesrId())
+                                .getDownloadUrl()
+                                .addOnCompleteListener(t -> {
+                                    if (t.isSuccessful()) {
+                                        Uri uri = t.getResult();
+                                        AndroidUtil.setProfilePic(context,uri, holder.profilePic);
+                                    }
+                                });
+
                         holder.usernmaeText.setText(otherUserModel.getUsername());
                         if (lastMessageSendByMe) {
                             holder.lastMessageText.setText("You: " + model.getLastMessage());

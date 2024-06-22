@@ -2,7 +2,12 @@ package mob.godutch.easychat.utils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import mob.godutch.easychat.model.UserModel;
 
@@ -23,4 +28,12 @@ public class AndroidUtil {
        userModel.setUesrId(intent.getStringExtra("userId"));
        return userModel;
    }
+
+   public static void setProfilePic(Context context, Uri imageUri, ImageView imageView) {
+       Glide.with(context)
+               .load(imageUri)
+               .apply(RequestOptions.circleCropTransform())
+               .into(imageView);
+   }
+
 }
