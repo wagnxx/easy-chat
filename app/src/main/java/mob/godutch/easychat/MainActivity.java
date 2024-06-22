@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         String token = task.getResult();
-                        Log.i("MyToken", token);
+                        FirebaseUtil.currentUserDetails().update("fcmToken", token);
                     }
                 });
     }
