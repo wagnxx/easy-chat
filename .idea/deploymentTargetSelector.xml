@@ -7,10 +7,10 @@
       </SelectionState>
       <SelectionState runConfigName="SplashActivity">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-06-23T14:24:01.781295Z">
+        <DropdownSelection timestamp="2024-06-23T14:51:11.698148Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/wagnxx/.android/avd/Pixel_2_API_33.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/wagnxx/.android/avd/Small_Phone_API_33.avd" />
             </handle>
           </Target>
         </DropdownSelection>
