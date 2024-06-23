@@ -1,8 +1,11 @@
 package mob.godutch.easychat;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -27,6 +30,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
+import org.json.JSONObject;
+
 import java.util.Arrays;
 
 import mob.godutch.easychat.adpter.ChatRecyclerAdapter;
@@ -34,19 +39,38 @@ import mob.godutch.easychat.adpter.SearchUserRecyclerAdapter;
 import mob.godutch.easychat.model.ChatMessageModel;
 import mob.godutch.easychat.model.ChatRoomModel;
 import mob.godutch.easychat.model.UserModel;
+import mob.godutch.easychat.utils.AccessTokenTask;
 import mob.godutch.easychat.utils.AndroidUtil;
+import mob.godutch.easychat.utils.FCMHelper;
 import mob.godutch.easychat.utils.FirebaseUtil;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+
+import android.content.Context;
+import android.widget.Toast;
+
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.AccessToken;
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class ChatActivity extends AppCompatActivity {
 
-    UserModel   otherUser;
+    UserModel otherUser;
     EditText messageInput;
     ImageButton sendMessageBtn;
     ImageButton backBtn;
     TextView otherUsername;
     RecyclerView recyclerView;
     ImageView imageView;
-
 
 
     String chatRoomId;
@@ -92,7 +116,7 @@ public class ChatActivity extends AppCompatActivity {
                 .addOnCompleteListener(t -> {
                     if (t.isSuccessful()) {
                         Uri uri = t.getResult();
-                        AndroidUtil.setProfilePic(this,uri, imageView);
+                        AndroidUtil.setProfilePic(this, uri, imageView);
                     }
                 });
 
@@ -100,7 +124,6 @@ public class ChatActivity extends AppCompatActivity {
         backBtn.setOnClickListener((v) -> {
             onBackPressed();
         });
-
 
 
         otherUsername.setText(otherUser.getUsername());
@@ -118,14 +141,13 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
-
     void setupRecylerView() {
         Query query = FirebaseUtil.getChatRoomMessageRefrence(chatRoomId)
                 .orderBy("timestamp", Query.Direction.DESCENDING);
-        FirestoreRecyclerOptions<ChatMessageModel>  options = new FirestoreRecyclerOptions.Builder<ChatMessageModel>()
-                .setQuery(query,ChatMessageModel.class).build();
+        FirestoreRecyclerOptions<ChatMessageModel> options = new FirestoreRecyclerOptions.Builder<ChatMessageModel>()
+                .setQuery(query, ChatMessageModel.class).build();
 
-        adapter = new ChatRecyclerAdapter(options,this);
+        adapter = new ChatRecyclerAdapter(options, this);
 
         // 设置 RecyclerView 的布局管理器
         LinearLayoutManager manager = new LinearLayoutManager(this);
@@ -142,33 +164,67 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
     }
-    void  sendMessageToUser(String message){
+
+    void sendMessageToUser(String message) {
         chatRoomModel.setLastMessageTimestamp(Timestamp.now());
         chatRoomModel.setLastMessageSenderId(FirebaseUtil.currentUserId());
         chatRoomModel.setLastMessage(message);
         FirebaseUtil.getChatRoomRefrence(chatRoomId).set(chatRoomModel);
 
-        ChatMessageModel chatMessageModel = new ChatMessageModel(message, FirebaseUtil.currentUserId(),Timestamp.now());
+        ChatMessageModel chatMessageModel = new ChatMessageModel(message, FirebaseUtil.currentUserId(), Timestamp.now());
         FirebaseUtil.getChatRoomMessageRefrence(chatRoomId).add(chatMessageModel)
                 .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentReference> task) {
                         if (task.isSuccessful()) {
                             messageInput.setText("");
+//                            sendNotification(message);
+                            deailSendInfo(message);
                         }
                     }
                 });
 
     }
+
+    void  deailSendInfo(String message) {
+        FirebaseUtil.currentUserDetails()
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        UserModel currentUserModel = task.getResult().toObject(UserModel.class);
+                        String deviceToken = otherUser.getFcmToken();
+                        String title = currentUserModel.getUsername();
+                        String body = message;
+
+//                            FCMHelper.sendNotification(accessToken, deviceToken, title, body);
+
+
+
+
+                        // Fetch the access token
+                        new AccessTokenTask(this, deviceToken, title, body, new AccessTokenTask.OnTaskCompleted() {
+                            @Override
+                            public void onTaskCompleted(boolean success) {
+                                Log.i("AccessTokenTask", String.valueOf(success));
+                            }
+                        }).execute();
+
+
+
+
+                    }
+                });
+    }
+
     void getOrCreateChatRoomModel() {
         FirebaseUtil.getChatRoomRefrence(chatRoomId).get().addOnCompleteListener(task -> {
-            if(task.isSuccessful()){
+            if (task.isSuccessful()) {
                 chatRoomModel = task.getResult().toObject(ChatRoomModel.class);
-                if(chatRoomModel==null){
+                if (chatRoomModel == null) {
                     //first time chat
                     chatRoomModel = new ChatRoomModel(
                             chatRoomId,
-                            Arrays.asList(FirebaseUtil.currentUserId(),otherUser.getUesrId()),
+                            Arrays.asList(FirebaseUtil.currentUserId(), otherUser.getUesrId()),
                             Timestamp.now(),
                             ""
                     );
@@ -177,5 +233,100 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
     }
+
+    void sendNotification(String message) {
+        FirebaseUtil.currentUserDetails().get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        UserModel currentUser = task.getResult().toObject(UserModel.class);
+                        try {
+                            JSONObject jsonObj = new JSONObject();
+
+                            JSONObject dataObj = new JSONObject();
+                            dataObj.put("userId", currentUser.getUesrId());
+
+                            JSONObject notificationObj = new JSONObject();
+                            notificationObj.put("title", currentUser.getUsername());
+                            notificationObj.put("body", message);
+
+                            jsonObj.put("notification", notificationObj);
+                            jsonObj.put("data", dataObj);
+                            jsonObj.put("to", otherUser.getFcmToken());
+
+                            callApi(jsonObj);
+
+                        } catch (Exception e) {
+
+                        }
+                    }
+                });
+    }
+
+    void callApi(JSONObject jsonObject) {
+        MediaType JSON = MediaType.get("application/json");
+        OkHttpClient client = new OkHttpClient();
+
+//        String url = "https://fcm.googleapis.com/fcm/send";
+//        String url = "https://fcm.googleapis.com/v1/projects/fb-dev-fde3a/messages:send";
+        String url = "https://fcm.googleapis.com/v1/projects/fb-dev-fde3a/messages:send";
+        RequestBody body = RequestBody.create(jsonObject.toString(), JSON);
+//        String token = "Bearer " + getAccessToken(this);
+//        Log.i("Bearer_Token", token);
+
+
+
+
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w("Bearer_Token", "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token =  "Bearer " +  task.getResult();
+
+                        // Log and toast
+//                        String token = "Bearer " + getAccessToken(this);
+                        Log.i("Bearer_Token", token);
+
+                        Request request = new Request.Builder()
+                                .url(url)
+                                .post(body)
+                                .addHeader("Authorization",  token)
+                                .addHeader("Content-Type", "application/json")
+                                .build();
+
+                        client.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            @Override
+                            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                                if (!response.isSuccessful()) {
+                                    throw new IOException("Unexpected code " + response);
+                                }
+                                Log.i("Bearer_Token",response.body().string());
+                            }
+                        });
+
+
+
+
+                    }
+                });
+
+
+
+
+
+
+    }
+
 
 }

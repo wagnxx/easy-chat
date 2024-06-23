@@ -3,6 +3,8 @@ package mob.godutch.easychat;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,8 +15,11 @@ import androidx.core.view.WindowInsetsCompat;
 import mob.godutch.easychat.model.UserModel;
 import mob.godutch.easychat.utils.AndroidUtil;
 import mob.godutch.easychat.utils.FirebaseUtil;
+import mob.godutch.easychat.utils.NTPClient;
+import mob.godutch.easychat.utils.NetworkTimeTask;
 
 public class SplashActivity extends AppCompatActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +28,6 @@ public class SplashActivity extends AppCompatActivity {
 
         if (getIntent().getExtras() != null) {
             String userId = getIntent().getExtras().getString("userId");
-//            FirebaseUtil.allUserCollectionReference().get()
             FirebaseUtil.allUserCollectionReference().document(userId)
                     .get()
                     .addOnCompleteListener(task -> {

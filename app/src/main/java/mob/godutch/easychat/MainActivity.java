@@ -1,6 +1,7 @@
 package mob.godutch.easychat;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -20,6 +21,7 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import mob.godutch.easychat.utils.FirebaseUtil;
+import mob.godutch.easychat.utils.NetworkTimeTask;
 
 public class MainActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
@@ -31,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        new NetworkTimeTask().execute();
 
         chatFragment = new ChatFragment();
         profileFragment = new ProfileFragment();

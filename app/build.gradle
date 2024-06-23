@@ -7,6 +7,10 @@ android {
     namespace 'mob.godutch.easychat'
     compileSdk 34
 
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+    }
+
     defaultConfig {
         applicationId "mob.godutch.easychat"
         minSdk 28
@@ -49,5 +53,11 @@ dependencies {
     implementation libs.firebase.ui.firestore
     implementation libs.imagepicker
     implementation libs.glide
+    implementation("com.squareup.okhttp3:okhttp:4.10.0") {
+        exclude group: 'META-INF'
+    }
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.8.0'
+    implementation 'com.google.api-client:google-api-client:1.32.1'
+    implementation 'com.google.oauth-client:google-oauth-client:1.32.1'
 
 }
